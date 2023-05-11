@@ -26,7 +26,7 @@
 #define ensemble 1
 // #define polydispersity 0.2 コードも変える;
 #define folder_name "stwr80"
-#define mgn         0.// Omega=omega/tau,ここではomegaを入れること;
+#define mgn         0.5// Omega=omega/tau,ここではomegaを入れること;
 //#define radios 1. //粒径の平均値を変えるときはヒストグラムの変え方も変えること:現在は1;
 // v4:lohistをNpで割らなくした;
 // v五:ディレクトリ名でRを先にした;
