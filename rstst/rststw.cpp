@@ -9,12 +9,12 @@
 
 #include "BM.h"
 
-#define Np     1000 // 4の倍数であること;NP=4*r^2*lo
-#define Nn     100
+#define Np    7680 // 4の倍数であること;NP=4*r^2*lo
+#define Nn     3000
 #define R   80.  //固定;
                 //  //R=sqrt(np/4/lo);
 // ,0.1より大きいこと;
-#define tmax     5000 // 973.686//2*100たうとする;
+#define tmax     50000 // 973.686//2*100たうとする;
 #define tmaxlg   500 // 緩和時間は10たうとする;
 #define dtlg     0.0001
 #define dt       0.0001
