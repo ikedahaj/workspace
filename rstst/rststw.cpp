@@ -11,7 +11,6 @@
 
 #define Np     1000 // 4の倍数であること;NP=4*r^2*lo
 #define Nn     100
-#define lowall 1
 #define R   80.  //固定;
                 //  //R=sqrt(np/4/lo);
 // ,0.1より大きいこと;
@@ -26,7 +25,7 @@
 #define tau      50.
 #define ensemble 1
 // #define polydispersity 0.2 コードも変える;
-#define folder_name "stwne4"
+#define folder_name "stwr80"
 #define mgn         0.// Omega=omega/tau,ここではomegaを入れること;
 //#define radios 1. //粒径の平均値を変えるときはヒストグラムの変え方も変えること:現在は1;
 // v4:lohistをNpで割らなくした;
@@ -77,14 +76,7 @@ void ini_coord_circle(double (*x)[dim]) {
             break;
     }
 }
-void setcoord_cirwall(double (*x)[dim]) {
-    double theta = 1. / (R * lowall);
-    double Nwall = 2. * M_PI * R * lowall;
-    for (int i = Np; i < Nwall; i++) {
-        x[i][0] = R * cos(theta * i);
-        x[i][1] = R * sin(theta * i);
-    }
-}
+
 void set_diameter(double *a) {
     for (int i = 0; i < Np; i++)
         a[i] = 0.5;
@@ -149,7 +141,7 @@ void calc_force(double (*x)[dim], double (*f)[dim], double *a,
 void eom_aoup(double (*v)[dim], double (*x)[dim], double (*f)[dim], double *a,
               double temp0, int (*list)[Nn], double (*F)[dim]) {
     double tauinv = dt / tau;
-    double F0[dim],v0[2],fiw[2];
+    double F0[dim],fiw[2];
     double fluc = sqrt(temp0 / dt), ri,riw,aij,w2,w6,w12,dUr;
     calc_force(x, f, a, list);
     for (int i = 0; i < Np; i++) {
@@ -174,10 +166,10 @@ void eom_aoup(double (*v)[dim], double (*x)[dim], double (*f)[dim], double *a,
         F[i][0] += (-F0[0] - F0[1] * mgn + fluc * gaussian_rand()) * tauinv;
         F[i][1] += (-F0[1] + F0[0] * mgn + fluc * gaussian_rand()) * tauinv;
 
-        v0[0] = F[i][0] + f[i][0]+fiw[0];
-        v0[1] = F[i][1] + f[i][1]+fiw[1];
-        x[i][0] += v0[0] * dt;
-        x[i][1] += v0[1] * dt;
+        v[i][0] = F[i][0] + f[i][0]+fiw[0];
+        v[i][1] = F[i][1] + f[i][1]+fiw[1];
+        x[i][0] += v[i][0] * dt;
+        x[i][1] += v[i][1] * dt;
         
     }
 }
@@ -192,14 +184,14 @@ void make_v_thetahist(double (*x)[dim], double (*v)[dim], double(*hist),
                       double *hist2,double *lohist) {
     // lohist  と一緒に運用し、outputでv_theta[i]/lo[i];
     // v_thetaとomegaを算出、histがｖhist2がΩ;
-    double v_t, dr,rint=(int)R,rsyou=R-rint,
+    double v_t, dr,
                     bunbo = 1. / ( ensemble * floor(tmax / dt));
     int histint;
     for (int i = 0; i < Np; i++) {
         dr = sqrt(x[i][0] * x[i][0] + x[i][1] * x[i][1]);
         v_t = (x[i][0] * v[i][1] - x[i][1] * v[i][0]) / (dr*dr);
         if (dr < R) {
-            histint=(int) floor(abs(dr-rsyou));
+            histint=(int) floor(dr);
             hist[histint] += v_t * bunbo*dr;
             hist2[histint] += v_t * bunbo ;
             lohist[histint]+=bunbo;
@@ -608,6 +600,12 @@ int main() {
     ini_hist(vcor, countout);
 
     j = 0;
+    double dtfirst=0.00000001;
+    while(j*dtfirst<0.1){
+        j++;
+        auto_list_update(&disp_max, x, x_update, list);
+        eom_aoup(v, x, f, a, temp, list, F);
+    }
     double ttemp = 5. * temp;
     if (ttemp / tau < 5)
         ttemp = 5. * tau;
